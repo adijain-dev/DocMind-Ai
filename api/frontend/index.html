@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>API Docs QnA Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--surface:#111118;--surface2:#18181f;--border:#2a2a38;
+  --accent:#7c6dfa;--accent2:#4ecca3;--text:#e8e8f0;--muted:#6b6b80;
+  --danger:#ff5f57;--success:#4ecca3;
+  --mono:'JetBrains Mono',monospace;--sans:'Syne',sans-serif;
+}
+body.light{--bg:#f4f4f8;--surface:#fff;--surface2:#ededf3;--border:#d0d0e0;--text:#1a1a2e;--muted:#888899}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;transition:background .3s,color .3s}
+
+/* HEADER */
+header{padding:12px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--surface);position:sticky;top:0;z-index:100}
+.logo-dot{width:9px;height:9px;background:var(--accent);border-radius:50%;box-shadow:0 0 10px var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+header h1{font-size:1rem;font-weight:800;letter-spacing:-.02em}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.version-badge{font-family:var(--mono);font-size:.65rem;color:var(--accent2);background:rgba(78,204,163,.1);padding:3px 9px;border-radius:20px;border:1px solid rgba(78,204,163,.2)}
+.theme-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:4px 10px;font-size:.8rem;cursor:pointer;transition:all .2s}
+.theme-btn:hover{border-color:var(--accent)}
+.stream-toggle-wrap{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.65rem;color:var(--muted)}
+.toggle-switch{position:relative;display:inline-block;width:34px;height:18px}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:18px;transition:.3s}
+.toggle-slider::before{position:absolute;content:"";height:12px;width:12px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+input:checked+.toggle-slider{background:var(--accent)}
+input:checked+.toggle-slider::before{transform:translateX(16px)}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:290px 1fr;flex:1;height:calc(100vh - 49px)}
+
+/* SIDEBAR */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10}
+.tab-btn{flex:1;padding:9px 2px;font-family:var(--mono);font-size:.55rem;text-transform:uppercase;letter-spacing:.07em;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.section{padding:16px;border-bottom:1px solid var(--border)}
+.section-label{font-family:var(--mono);font-size:.6rem;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.section-label::before{content:'';width:3px;height:3px;background:var(--accent);border-radius:50%}
+
+/* DROPZONE */
+.dropzone{border:1.5px dashed var(--border);border-radius:10px;padding:18px 14px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2)}
+.dropzone:hover,.dropzone.drag-over{border-color:var(--accent);background:rgba(124,109,250,.06)}
+.dropzone input{display:none}
+.dropzone p{font-size:.72rem;color:var(--muted);line-height:1.5}
+.dropzone p strong{color:var(--text)}
+.file-badges{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+.file-badge{font-family:var(--mono);font-size:.6rem;color:var(--accent2);background:rgba(78,204,163,.1);padding:2px 7px;border-radius:20px;border:1px solid rgba(78,204,163,.2)}
+
+/* INPUTS */
+.input-group{margin-top:10px}
+.input-group label{display:block;font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-bottom:5px}
+input[type="text"],select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-family:var(--mono);font-size:.75rem;outline:none;transition:border-color .2s}
+input[type="text"]:focus,select:focus,textarea:focus{border-color:var(--accent)}
+select{cursor:pointer}
+select option{background:var(--surface2)}
+textarea{resize:vertical;min-height:70px;line-height:1.5}
+
+/* BUTTONS */
+.btn{width:100%;padding:9px 14px;border:none;border-radius:8px;font-family:var(--sans);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:8px}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#6a5cf0;transform:translateY(-1px)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:rgba(255,95,87,.1);color:var(--danger);border:1px solid rgba(255,95,87,.3)}
+.btn-danger:hover{background:rgba(255,95,87,.2)}
+.btn-success{background:rgba(78,204,163,.15);color:var(--success);border:1px solid rgba(78,204,163,.3)}
+.btn-success:hover{background:rgba(78,204,163,.25)}
+
+.status-bar{font-family:var(--mono);font-size:.68rem;padding:6px 9px;border-radius:7px;margin-top:8px;display:none}
+.status-bar.success{background:rgba(78,204,163,.1);color:var(--success);border:1px solid rgba(78,204,163,.2)}
+.status-bar.error{background:rgba(255,95,87,.1);color:var(--danger);border:1px solid rgba(255,95,87,.2)}
+.status-bar.loading{background:rgba(124,109,250,.1);color:var(--accent);border:1px solid rgba(124,109,250,.2)}
+
+/* HISTORY */
+.history-list{display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto}
+.history-item{font-family:var(--mono);font-size:.65rem;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 9px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:all .15s}
+.history-item:hover{color:var(--accent);border-color:var(--accent)}
+.history-empty{font-size:.7rem;color:var(--muted);text-align:center;padding:10px 0}
+
+/* TESTER */
+.method-select{font-family:var(--mono);font-size:.72rem;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);width:100%;margin-bottom:8px;outline:none;cursor:pointer}
+.test-result-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:10px;font-family:var(--mono);font-size:.72rem;max-height:320px;overflow-y:auto;word-break:break-all;white-space:pre-wrap;color:var(--text);display:none}
+
+/* MAIN */
+.main{display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+.chat-header{padding:10px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface);flex-wrap:wrap}
+.api-indicator{font-family:var(--mono);font-size:.68rem;color:var(--muted)}
+.api-indicator span{color:var(--accent2);font-weight:600}
+.lang-filter{display:flex;gap:5px;flex-wrap:wrap}
+.lang-btn{font-family:var(--mono);font-size:.6rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .15s}
+.lang-btn.active{background:rgba(124,109,250,.15);border-color:var(--accent);color:var(--accent)}
+
+.compare-banner{display:none;padding:7px 22px;background:rgba(124,109,250,.08);border-bottom:1px solid rgba(124,109,250,.2);font-family:var(--mono);font-size:.68rem;color:var(--accent);align-items:center;gap:8px}
+.compare-banner.show{display:flex}
+.compare-close{margin-left:auto;cursor:pointer;opacity:.6}
+.compare-close:hover{opacity:1}
+
+/* MESSAGES */
+.messages{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.msg{display:flex;gap:10px;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{flex-direction:row-reverse}
+.avatar{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0}
+.avatar.ai{background:rgba(124,109,250,.2);border:1px solid rgba(124,109,250,.3)}
+.avatar.usr{background:rgba(78,204,163,.2);border:1px solid rgba(78,204,163,.3)}
+.bubble{max-width:78%;padding:11px 14px;border-radius:12px;font-size:.82rem;line-height:1.65;position:relative}
+.msg.ai .bubble{background:var(--surface);border:1px solid var(--border);border-top-left-radius:4px;color:var(--text)}
+.msg.user .bubble{background:rgba(124,109,250,.15);border:1px solid rgba(124,109,250,.25);border-top-right-radius:4px;text-align:right}
+.bubble pre{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px;margin:7px 0;overflow-x:auto;font-family:var(--mono);font-size:.7rem;line-height:1.7;white-space:pre-wrap;text-align:left}
+.bubble code{font-family:var(--mono);font-size:.76em;background:rgba(124,109,250,.15);padding:2px 5px;border-radius:4px}
+.bubble strong{color:var(--accent2)}
+.code-block-wrapper{position:relative;margin:7px 0}
+.lang-tag{font-family:var(--mono);font-size:.6rem;color:var(--accent);margin-bottom:2px;display:block}
+.copy-code-btn{position:absolute;top:5px;right:5px;font-family:var(--mono);font-size:.58rem;padding:2px 7px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s}
+.copy-code-btn:hover{color:var(--accent);border-color:var(--accent)}
+
+.bubble-actions{display:flex;gap:5px;margin-top:8px;padding-top:7px;border-top:1px solid var(--border)}
+.action-btn{font-family:var(--mono);font-size:.6rem;padding:2px 8px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s}
+.action-btn:hover{color:var(--text);border-color:var(--muted)}
+.action-btn.liked{color:var(--success);border-color:var(--success);background:rgba(78,204,163,.1)}
+.action-btn.disliked{color:var(--danger);border-color:var(--danger);background:rgba(255,95,87,.1)}
+.tokens-badge{font-family:var(--mono);font-size:.58rem;color:var(--muted);margin-top:4px;display:block}
+
+/* COMPARE DISPLAY */
+.compare-section{margin:8px 0}
+.compare-section-title{font-family:var(--mono);font-size:.68rem;font-weight:600;color:var(--accent);padding:5px 10px;background:rgba(124,109,250,.1);border-radius:6px;border-left:3px solid var(--accent);margin-bottom:6px}
+.compare-divider{border:none;border-top:1px dashed var(--border);margin:14px 0}
+
+/* TYPING */
+.typing-wrap{padding:0 22px 0 52px}
+.typing-indicator{display:none;gap:4px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;border-top-left-radius:4px;width:fit-content}
+.typing-indicator.show{display:flex}
+.dot{width:5px;height:5px;background:var(--accent);border-radius:50%;animation:bounce 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+/* INPUT BAR */
+.input-bar{padding:10px 22px;border-top:1px solid var(--border);display:flex;gap:7px;align-items:center;background:var(--surface);position:relative}
+.input-wrap{flex:1;position:relative}
+.input-wrap input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 13px;color:var(--text);font-family:var(--sans);font-size:.82rem;outline:none;transition:border-color .2s}
+.input-wrap input:focus{border-color:var(--accent)}
+
+/* SUGGESTIONS */
+#suggestions-box{position:absolute;bottom:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 -4px 20px rgba(0,0,0,.3);overflow:hidden;z-index:50;display:none}
+.suggestion-item{padding:8px 13px;font-family:var(--mono);font-size:.7rem;color:var(--muted);cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px}
+.suggestion-item:last-child{border-bottom:none}
+.suggestion-item:hover{background:var(--surface2);color:var(--text)}
+.suggestion-icon{opacity:.5;font-size:.75rem}
+
+.mic-btn,.send-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;width:42px;height:42px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;font-size:1rem}
+.send-btn{background:var(--accent);border:none}
+.send-btn:hover{background:#6a5cf0;transform:translateY(-1px)}
+.send-btn svg{width:15px;height:15px;fill:white}
+.mic-btn:hover{border-color:var(--accent)}
+.mic-btn.recording{background:rgba(255,95,87,.2);border-color:var(--danger);animation:mic-pulse 1s infinite}
+@keyframes mic-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,95,87,.4)}50%{box-shadow:0 0 0 6px rgba(255,95,87,0)}}
+
+/* QUICK CHIPS */
+.quick-chips{margin-top:16px;text-align:center}
+.chips-label{font-family:var(--mono);font-size:.65rem;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.08em}
+.chips-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:600px}
+.chip{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:20px;padding:7px 14px;font-size:.78rem;font-family:var(--sans);cursor:pointer;transition:all .2s;white-space:nowrap}
+.chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(124,109,250,.08);transform:translateY(-1px)}
+
+/* EMPTY STATE */
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);text-align:center;padding:40px}
+.empty-state .icon{font-size:2.5rem;opacity:.4}
+.empty-state p{font-size:.8rem;line-height:1.6;max-width:280px}
+.empty-state strong{color:var(--text)}
+
+/* TOAST */
+#toast{position:fixed;bottom:22px;right:22px;z-index:9999;background:#313244;color:#cdd6f4;padding:9px 16px;border-radius:8px;font-size:.78rem;font-family:var(--mono);box-shadow:0 4px 16px rgba(0,0,0,.4);opacity:0;transition:opacity .25s;pointer-events:none}
+
+.spinner{display:inline-block;width:10px;height:10px;border:2px solid rgba(124,109,250,.3);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin-right:4px}
+@keyframes spin{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-dot"></div>
+  <h1>API Docs QnA Agent</h1>
+  <div class="header-right">
+    <span class="version-badge">v3.0 · local</span>
+    <div class="stream-toggle-wrap">
+      <span>⚡Stream</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="streamToggle" checked/>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()">🌙 Theme</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-tabs">
+      <button class="tab-btn active" onclick="switchTab('upload')">📤 Upload</button>
+      <button class="tab-btn" onclick="switchTab('apis')">🔌 APIs</button>
+      <button class="tab-btn" onclick="switchTab('tester')">🧪 Tester</button>
+      <button class="tab-btn" onclick="switchTab('generator')">⚡ SDK/Docs</button>
+      <button class="tab-btn" onclick="switchTab('history')">🕐 History</button>
+    </div>
+
+    <!-- UPLOAD TAB -->
+    <div class="tab-panel active" id="tab-upload">
+      <div class="section">
+        <div class="section-label">Upload Documentation</div>
+        <div class="dropzone" id="dropzone"
+             onclick="document.getElementById('fileInput').click()"
+             ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+          <input type="file" id="fileInput" multiple accept=".pdf,.md,.markdown,.txt,.yaml,.yml,.json" onchange="onFilesSelected(this)"/>
+          <div style="font-size:1.5rem;margin-bottom:5px">📄</div>
+          <p><strong>Click or drag files here</strong><br/>PDF, YAML, JSON, Markdown, TXT<br/><small>Multiple files supported</small></p>
+          <div class="file-badges" id="fileBadges"></div>
+        </div>
+        <div class="input-group">
+          <label>API NAME</label>
+          <input type="text" id="apiNameInput" placeholder="e.g. stripe-api, github-api"/>
+        </div>
+        <button class="btn btn-primary" onclick="uploadFiles()">
+          <span id="uploadBtnText">↑ Upload & Process</span>
+        </button>
+        <div class="status-bar" id="uploadStatus"></div>
+      </div>
+    </div>
+
+    <!-- APIS TAB -->
+    <div class="tab-panel" id="tab-apis">
+      <div class="section">
+        <div class="section-label">Select API</div>
+        <div class="input-group">
+          <label>ACTIVE API</label>
+          <select id="apiSelect" onchange="onApiChange()">
+            <option value="">-- Select an API --</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary" onclick="loadApis()">⟳ &nbsp;Refresh List</button>
+      </div>
+      <div class="section">
+        <div class="section-label">Compare APIs</div>
+        <div class="input-group">
+          <label>API 1</label>
+          <select id="compareApi1"><option value="">-- Select API 1 --</option></select>
+        </div>
+        <div class="input-group" style="margin-top:8px">
+          <label>API 2</label>
+          <select id="compareApi2"><option value="">-- Select API 2 --</option></select>
+        </div>
+        <button class="btn btn-secondary" onclick="startCompareMode()">⚖️ &nbsp;Compare Mode</button>
+      </div>
+      <div class="section">
+        <div class="section-label">Export</div>
+        <button class="btn btn-success" onclick="exportPDF()">📕 &nbsp;Export as PDF</button>
+        <button class="btn btn-secondary" onclick="exportChat('md')">📄 &nbsp;Export as Markdown</button>
+        <button class="btn btn-secondary" onclick="exportChat('txt')">📝 &nbsp;Export as Text</button>
+        <button class="btn btn-danger" onclick="clearChat()">🗑️ &nbsp;Clear Chat</button>
+      </div>
+    </div>
+
+    <!-- TESTER TAB -->
+    <div class="tab-panel" id="tab-tester">
+      <div class="section">
+        <div class="section-label">API Tester</div>
+        <div class="input-group">
+          <label>METHOD</label>
+          <select class="method-select" id="testMethod">
+            <option>GET</option><option>POST</option><option>PUT</option>
+            <option>PATCH</option><option>DELETE</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>URL</label>
+          <input type="text" id="testUrl" placeholder="https://api.example.com/endpoint"/>
+        </div>
+        <div class="input-group">
+          <label>HEADERS (JSON)</label>
+          <textarea id="testHeaders" placeholder='{"Authorization": "Bearer token"}'></textarea>
+        </div>
+        <div class="input-group">
+          <label>BODY (JSON)</label>
+          <textarea id="testBody" placeholder='{"key": "value"}'></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="runTest()" id="testBtn">▶ &nbsp;Run Request</button>
+        <div class="test-result-box" id="testResult"></div>
+      </div>
+    </div>
+
+    <!-- SDK & DOCS GENERATOR TAB -->
+    <div class="tab-panel" id="tab-generator">
+      <div class="section">
+        <div class="section-label">SDK & Docs Generator</div>
+        <div class="input-group">
+          <label>TARGET API</label>
+          <select id="genApiSelect">
+            <option value="">-- Select an API --</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>LANGUAGE</label>
+          <select id="genLanguage">
+            <option value="all">All (Python, JS, cURL)</option>
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+            <option value="java">Java</option>
+            <option value="curl">cURL</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="genSdkBtn" onclick="generateSDK()">⚡ &nbsp;Generate SDK</button>
+        <button class="btn btn-secondary" id="genReadmeBtn" onclick="generateReadme()">📝 &nbsp;Generate README</button>
+        <div class="status-bar" id="genStatus"></div>
+        <div class="test-result-box" id="genResultBox"></div>
+        <div id="genDownloadGroup" style="display:none;margin-top:8px;gap:6px;flex-direction:column;">
+          <button class="btn btn-success" id="genDownloadBtn">💾 &nbsp;Download File</button>
+          <button class="btn btn-secondary" id="genCopyBtn" onclick="copyGenResult()">📋 &nbsp;Copy Code</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div class="tab-panel" id="tab-history">
+      <div class="section">
+        <div class="section-label">Search History</div>
+        <div class="history-list" id="historyList">
+          <p class="history-empty">No history yet</p>
+        </div>
+        <button class="btn btn-danger" onclick="clearHistory()" style="margin-top:10px">🗑️ Clear History</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CHAT -->
+  <main class="main">
+    <div class="chat-header">
+      <div class="api-indicator">Chatting with: <span id="activeApiLabel">none selected</span></div>
+      <div class="lang-filter" style="margin-left:auto">
+        <button class="lang-btn active" onclick="setLangFilter('all',this)">All</button>
+        <button class="lang-btn" onclick="setLangFilter('python',this)">Python</button>
+        <button class="lang-btn" onclick="setLangFilter('javascript',this)">JS</button>
+        <button class="lang-btn" onclick="setLangFilter('java',this)">Java</button>
+        <button class="lang-btn" onclick="setLangFilter('curl',this)">cURL</button>
+      </div>
+    </div>
+
+    <div class="compare-banner" id="compareBanner">
+      ⚖️ Compare Mode: <strong id="compareLabel"></strong>
+      <span class="compare-close" onclick="stopCompareMode()">✕ Exit</span>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="empty-state" id="emptyState">
+        <div class="icon">⚡</div>
+        <p><strong>Upload API docs</strong> on the left, select the API, then start asking questions in any language!</p>
+        <div class="quick-chips" id="quickChips">
+          <div class="chips-label">Try asking:</div>
+          <div class="chips-row">
+            <button class="chip" onclick="useChip('How do I authenticate?')">🔐 How do I authenticate?</button>
+            <button class="chip" onclick="useChip('What endpoints are available?')">📡 Available endpoints?</button>
+            <button class="chip" onclick="useChip('Show me a Python example')">🐍 Python example</button>
+            <button class="chip" onclick="useChip('What are the rate limits?')">⏱️ Rate limits?</button>
+            <button class="chip" onclick="useChip('How to handle errors?')">❌ Error handling?</button>
+            <button class="chip" onclick="useChip('Show me a JavaScript example')">🟨 JS example</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="typing-wrap">
+      <div class="typing-indicator" id="typingIndicator">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+    </div>
+
+    <div class="input-bar">
+      <div class="input-wrap">
+        <input type="text" id="questionInput"
+               placeholder="Ask anything..."
+               onkeydown="onInputKey(event)" oninput="onInputChange(this.value)"/>
+        <div id="suggestions-box"></div>
+      </div>
+      <button class="mic-btn" id="micBtn" title="🎤 Voice Input" onclick="toggleVoice()">🎤</button>
+      <button class="send-btn" id="sendBtn" onclick="sendQuestion()">
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = '/api';
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let streamingEnabled    = true;
+let compareMode         = false;
+let compareApi1Val      = '';
+let compareApi2Val      = '';
+let chatMessages        = [];          // for export / PDF
+let conversationHistory = [];          // sent to backend for memory
+let currentLangFilter   = 'all';
+let isRecording         = false;
+let recognition         = null;
+let suggestTimer        = null;
+
+const SUGGESTIONS = {
+  auth:     ['How do I authenticate?','What auth methods are supported?','API key kaise use karein?','OAuth flow explain karo'],
+  error:    ['What does 401 mean?','How to handle rate limiting?','Retry strategy kya honi chahiye?','Common error codes?'],
+  endpoint: ['What endpoints are available?','Base URL kya hai?','List all GET endpoints','What is the API structure?'],
+  param:    ['What parameters are required?','Response format kya hai?','Request body ka structure?','Required headers kya hain?'],
+  limit:    ['What are rate limits?','How many requests per minute?','Is there a free tier?','Request quota kya hai?'],
+  example:  ['Show me an example request','Give me a curl example','Python mein example do','Sample request dikhao'],
+  default:  ['What can this API do?','How do I get started?','Authentication method kya hai?','Available endpoints dikhao'],
+};
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light');
+    document.querySelector('.theme-btn').textContent = '🌙 Dark';
+  }
+  document.getElementById('streamToggle').addEventListener('change', e => {
+    streamingEnabled = e.target.checked;
+    showToast(streamingEnabled ? '⚡ Streaming ON' : '📦 Streaming OFF');
+  });
+  loadApis();
+  initVoice();
+});
+  initVoice();
+});
+
+// ── Theme ─────────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  const light = document.body.classList.contains('light');
+  document.querySelector('.theme-btn').textContent = light ? '🌙 Dark' : '🌙 Theme';
+  localStorage.setItem('theme', light ? 'light' : 'dark');
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  const tabs = ['upload','apis','tester','generator','history'];
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', tabs[i] === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'history') renderHistory();
+  if (name === 'generator') {
+    const activeVal = document.getElementById('apiSelect').value;
+    if (activeVal) document.getElementById('genApiSelect').value = activeVal;
+  }
+}
+
+// ── Upload ────────────────────────────────────────────────────────────────────
+let selectedFiles = [];
+function onFilesSelected(input) { selectedFiles = Array.from(input.files); renderBadges(); }
+function renderBadges() {
+  document.getElementById('fileBadges').innerHTML =
+    selectedFiles.map(f => `<span class="file-badge">📎 ${f.name}</span>`).join('');
+}
+function onDragOver(e) { e.preventDefault(); document.getElementById('dropzone').classList.add('drag-over'); }
+function onDragLeave()  { document.getElementById('dropzone').classList.remove('drag-over'); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropzone').classList.remove('drag-over');
+  selectedFiles = Array.from(e.dataTransfer.files);
+  renderBadges();
+}
+
+async function uploadFiles() {
+  const apiName = document.getElementById('apiNameInput').value.trim();
+  const status  = document.getElementById('uploadStatus');
+  const btnText = document.getElementById('uploadBtnText');
+  if (!selectedFiles.length) return showStatus(status, 'error', 'Please select at least one file');
+  if (!apiName)              return showStatus(status, 'error', 'Please enter an API name');
+  let total = 0;
+  btnText.innerHTML = '<span class="spinner"></span>Processing...';
+  for (let i = 0; i < selectedFiles.length; i++) {
+    const file = selectedFiles[i];
+    showStatus(status, 'loading', `Processing ${i+1}/${selectedFiles.length}: ${file.name}`);
+    const fd = new FormData();
+    fd.append('file', file); fd.append('api_name', apiName);
+    try {
+      const res  = await fetch(`${API}/upload`, { method:'POST', body:fd });
+      const data = await res.json();
+      if (res.ok) total += data.chunks_stored;
+      else showStatus(status, 'error', `✗ ${file.name}: ${data.detail}`);
+    } catch { showStatus(status, 'error', '✗ Server unreachable'); btnText.innerHTML = '↑ Upload & Process'; return; }
+  }
+  showStatus(status, 'success', `✓ ${total} chunks stored for "${apiName}"`);
+  loadApis();
+  initVoice();
+});
+  btnText.innerHTML = '↑ Upload & Process';
+}
+
+// ── Load APIs ─────────────────────────────────────────────────────────────────
+async function loadApis() {
+  try {
+    const data = await fetch(`${API}/apis`).then(r => r.json());
+    const apis = data.apis || [];
+    ['apiSelect','compareApi1','compareApi2','genApiSelect'].forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      const ph  = id==='apiSelect'||id==='genApiSelect' ? '-- Select an API --' : id==='compareApi1' ? '-- Select API 1 --' : '-- Select API 2 --';
+      sel.innerHTML = `<option value="">${ph}</option>`;
+      apis.forEach(a => { const o=document.createElement('option'); o.value=a; o.textContent=a; sel.appendChild(o); });
+    });
+  } catch {}
+}
+
+function onApiChange() {
+  const v = document.getElementById('apiSelect').value;
+  document.getElementById('activeApiLabel').textContent = v || 'none selected';
+}
+
+// ── Lang Filter ───────────────────────────────────────────────────────────────
+function setLangFilter(lang, btn) {
+  currentLangFilter = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyLangFilter();
+}
+function applyLangFilter() {
+  document.querySelectorAll('.code-block-wrapper').forEach(el => {
+    if (currentLangFilter === 'all') { el.style.display = ''; return; }
+    const tag = (el.dataset.lang||'').toLowerCase();
+    el.style.display = (tag.includes(currentLangFilter)) ? '' : 'none';
+  });
+}
+
+// ── Compare Mode ──────────────────────────────────────────────────────────────
+function startCompareMode() {
+  const a1 = document.getElementById('compareApi1').value;
+  const a2 = document.getElementById('compareApi2').value;
+  if (!a1||!a2)   return showToast('❗ Please select both APIs');
+  if (a1===a2)    return showToast('❗ Select two different APIs');
+  compareMode=true; compareApi1Val=a1; compareApi2Val=a2;
+  document.getElementById('compareLabel').textContent = `${a1}  vs  ${a2}`;
+  document.getElementById('compareBanner').classList.add('show');
+  document.getElementById('activeApiLabel').textContent = `${a1} vs ${a2}`;
+  showToast('⚖️ Compare mode ON');
+}
+function stopCompareMode() {
+  compareMode=false; compareApi1Val=''; compareApi2Val='';
+  document.getElementById('compareBanner').classList.remove('show');
+  document.getElementById('activeApiLabel').textContent = document.getElementById('apiSelect').value || 'none selected';
+}
+
+// ── Send Question ─────────────────────────────────────────────────────────────
+async function sendQuestion() {
+  const q   = document.getElementById('questionInput').value.trim();
+  const api = document.getElementById('apiSelect').value;
+  if (!q) return;
+  if (!compareMode && !api) { showToast('❗ APIs tab se ek API select karo'); return; }
+
+  document.getElementById('emptyState')?.remove();
+  hideSuggestions();
+  appendMsg('user', q);
+  saveHistory(q);
+  conversationHistory.push({ role:'user', content:q });
+  document.getElementById('questionInput').value = '';
+  showTyping(true);
+  setSendLoading(true);
+
+  let answer = '';
+  if (compareMode) {
+    answer = await doCompare(q);
+  } else if (streamingEnabled) {
+    answer = await doStream(q, api);
+  } else {
+    answer = await doNormal(q, api);
+  }
+
+  conversationHistory.push({ role:'assistant', content: answer });
+  // Keep history manageable
+  if (conversationHistory.length > 20) conversationHistory = conversationHistory.slice(-20);
+  showTyping(false);
+  setSendLoading(false);
+}
+
+async function doNormal(q, api) {
+  try {
+    const res  = await fetch(`${API}/chat`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ question:q, api_name:api, conversation_history:conversationHistory })
+    });
+    const data = await res.json();
+    showTyping(false);
+    const answer = data.answer || data.detail || 'Error occurred';
+    appendMsg('ai', answer, data.tokens_used);
+    return answer;
+  } catch (e) {
+    showTyping(false);
+    const msg = '✗ Server unreachable';
+    appendMsg('ai', msg);
+    return msg;
+  }
+}
+
+async function doStream(q, api) {
+  showTyping(false);
+  const msgEl = appendStreamingMsg();
+  let fullText = '';
+  try {
+    const res = await fetch(`${API}/chat/stream`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ question:q, api_name:api, conversation_history:conversationHistory })
+    });
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let   buf     = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream:true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const ev = JSON.parse(line.slice(6));
+          if (ev.error) { appendStreamText(msgEl, '\n\n❌ '+ev.error); break; }
+          if (!ev.done) { fullText += ev.text; appendStreamText(msgEl, ev.text); }
+          else { finalizeStreamMsg(msgEl, fullText); }
+        } catch {}
+      }
+    }
+  } catch (e) {
+    appendStreamText(msgEl, '✗ Network error: ' + e.message);
+  }
+  return fullText;
+}
+
+async function doCompare(q) {
+  try {
+    const res  = await fetch(`${API}/compare`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ question:q, api1:compareApi1Val, api2:compareApi2Val, conversation_history:conversationHistory })
+    });
+    const data = await res.json();
+    showTyping(false);
+    if (res.ok) {
+      appendCompareMsg(data.answer1, data.answer2, data.api1, data.api2);
+      return `[${data.api1}]: ${data.answer1}\n\n[${data.api2}]: ${data.answer2}`;
+    } else {
+      const msg = '✗ ' + (data.detail||'Compare failed');
+      appendMsg('ai', msg);
+      return msg;
+    }
+  } catch (e) {
+    showTyping(false);
+    const msg = '✗ Server unreachable';
+    appendMsg('ai', msg);
+    return msg;
+  }
+}
+
+// ── Message Rendering ─────────────────────────────────────────────────────────
+function appendMsg(role, text, tokens) {
+  const messages = document.getElementById('messages');
+  const msg = document.createElement('div');
+  msg.className = `msg ${role}`;
+  const av = document.createElement('div');
+  av.className = `avatar ${role==='ai'?'ai':'usr'}`;
+  av.textContent = role==='ai' ? '⚡' : '👤';
+  const bub = document.createElement('div');
+  bub.className = 'bubble';
+  bub.innerHTML = formatText(text);
+  if (tokens) {
+    const t = document.createElement('span');
+    t.className='tokens-badge'; t.textContent=`${tokens} tokens`;
+    bub.appendChild(t);
+  }
+  if (role==='ai') bub.appendChild(makeBubbleActions());
+  msg.appendChild(av); msg.appendChild(bub);
+  messages.appendChild(msg);
+  applyLangFilter(); scrollBottom();
+  chatMessages.push({ role, content:text, tokens, timestamp: nowStr() });
+  return msg;
+}
+
+function appendStreamingMsg() {
+  const messages = document.getElementById('messages');
+  const msg = document.createElement('div');
+  msg.className = 'msg ai';
+  const av = document.createElement('div');
+  av.className = 'avatar ai'; av.textContent = '⚡';
+  const bub = document.createElement('div');
+  bub.className = 'bubble';
+  bub.dataset.raw = '';
+  msg.appendChild(av); msg.appendChild(bub);
+  messages.appendChild(msg);
+  scrollBottom();
+  return bub;
+}
+
+function appendStreamText(bubEl, chunk) {
+  bubEl.dataset.raw += chunk;
+  bubEl.innerHTML = formatText(bubEl.dataset.raw);
+  applyLangFilter();
+  scrollBottom();
+}
+
+function finalizeStreamMsg(bubEl, fullText) {
+  bubEl.appendChild(makeBubbleActions());
+  chatMessages.push({ role:'assistant', content:fullText, timestamp: nowStr() });
+}
+
+function appendCompareMsg(ans1, ans2, api1, api2) {
+  const messages = document.getElementById('messages');
+  const msg = document.createElement('div');
+  msg.className = 'msg ai';
+  const av = document.createElement('div');
+  av.className = 'avatar ai'; av.textContent = '⚖️';
+  const bub = document.createElement('div');
+  bub.className = 'bubble';
+  bub.style.maxWidth = '85%';
+  bub.innerHTML = `
+    <div class="compare-section">
+      <div class="compare-section-title">📌 ${api1}</div>
+      <div>${formatText(ans1)}</div>
+    </div>
+    <hr class="compare-divider"/>
+    <div class="compare-section">
+      <div class="compare-section-title">📌 ${api2}</div>
+      <div>${formatText(ans2)}</div>
+    </div>
+  `;
+  bub.appendChild(makeBubbleActions());
+  msg.appendChild(av); msg.appendChild(bub);
+  messages.appendChild(msg);
+  applyLangFilter(); scrollBottom();
+  chatMessages.push({ role:'assistant', content:`[${api1}]:\n${ans1}\n\n[${api2}]:\n${ans2}`, timestamp: nowStr() });
+}
+
+function makeBubbleActions() {
+  const div = document.createElement('div');
+  div.className = 'bubble-actions';
+  div.innerHTML = `
+    <button class="action-btn" onclick="copyBubble(this)">📋 Copy</button>
+    <button class="action-btn" onclick="feedback(this,'up')">👍</button>
+    <button class="action-btn" onclick="feedback(this,'down')">👎</button>
+  `;
+  return div;
+}
+
+// ── Format Text ───────────────────────────────────────────────────────────────
+function formatText(text) {
+  if (!text) return '';
+  // Code blocks
+  text = text.replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, lang, code) => {
+    const l = lang || 'code';
+    return `<div class="code-block-wrapper" data-lang="${l.toLowerCase()}">
+      <span class="lang-tag">${l}</span>
+      <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
+      <pre>${escHtml(code.trim())}</pre>
+    </div>`;
+  });
+  text = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  text = text.replace(/`([^`]+)`/g,'<code>$1</code>');
+  text = text.replace(/\n/g,'<br/>');
+  return text;
+}
+function escHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Copy ──────────────────────────────────────────────────────────────────────
+function copyCode(btn) {
+  navigator.clipboard.writeText(btn.nextElementSibling.textContent).then(() => {
+    btn.textContent='Copied!'; setTimeout(()=>btn.textContent='Copy',2000);
+  });
+}
+function copyBubble(btn) {
+  const t = btn.closest('.bubble').innerText.replace(/📋 Copy|👍|👎|Copied!/g,'').trim();
+  navigator.clipboard.writeText(t).then(() => {
+    btn.textContent='✓ Copied'; setTimeout(()=>btn.textContent='📋 Copy',2000);
+  });
+}
+function feedback(btn, type) {
+  btn.parentElement.querySelectorAll('.action-btn').forEach(b=>b.classList.remove('liked','disliked'));
+  btn.classList.add(type==='up'?'liked':'disliked');
+}
+
+// ── Voice Input ───────────────────────────────────────────────────────────────
+function initVoice() {
+  const mic = document.getElementById('micBtn');
+  const SR  = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { mic.style.opacity='.4'; mic.title='Voice not supported in this browser'; return; }
+  recognition = new SR();
+  recognition.continuous      = false;
+  recognition.interimResults  = true;
+  recognition.maxAlternatives = 1;
+  // Auto-detect language — don't hardcode
+  recognition.lang = navigator.language || 'en-IN';
+
+  recognition.onstart = () => { isRecording=true; mic.classList.add('recording'); showToast('🎤 Bol raha hoon...'); };
+  recognition.onresult = (e) => {
+    const transcript = Array.from(e.results).map(r=>r[0].transcript).join('');
+    document.getElementById('questionInput').value = transcript;
+    onInputChange(transcript);
+  };
+  recognition.onend = () => { isRecording=false; mic.classList.remove('recording'); };
+  recognition.onerror = (e) => { isRecording=false; mic.classList.remove('recording'); showToast('🎤 Error: '+e.error); };
+}
+
+function toggleVoice() {
+  if (!recognition) { showToast('Voice not supported'); return; }
+  isRecording ? recognition.stop() : recognition.start();
+}
+
+// ── Smart Suggestions ─────────────────────────────────────────────────────────
+function onInputKey(e) {
+  if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendQuestion(); }
+  if (e.key==='Escape') hideSuggestions();
+}
+
+function onInputChange(val) {
+  clearTimeout(suggestTimer);
+  if (!val || val.length < 2) { hideSuggestions(); return; }
+  suggestTimer = setTimeout(() => showSuggestions(getSuggestions(val)), 280);
+}
+
+function getSuggestions(text) {
+  const lower = text.toLowerCase();
+  let bank = SUGGESTIONS.default;
+  if (/auth|key|token|login|oauth|bearer/.test(lower)) bank = SUGGESTIONS.auth;
+  else if (/error|fail|4\d\d|5\d\d|status|retry/.test(lower)) bank = SUGGESTIONS.error;
+  else if (/endpoint|route|url|path|resource/.test(lower)) bank = SUGGESTIONS.endpoint;
+  else if (/param|body|header|format|response|request/.test(lower)) bank = SUGGESTIONS.param;
+  else if (/limit|rate|quota|tier|free|plan/.test(lower)) bank = SUGGESTIONS.limit;
+  else if (/example|sample|curl|code|demo|show|dikhao/.test(lower)) bank = SUGGESTIONS.example;
+  return bank.filter(s => s.toLowerCase().includes(lower) || lower.length < 4).slice(0,5);
+}
+
+function showSuggestions(items) {
+  const box = document.getElementById('suggestions-box');
+  if (!items.length) { hideSuggestions(); return; }
+  // Use data-text attribute — avoids JSON/quote issues in onclick
+  box.innerHTML = items.map((s,i) =>
+    `<div class="suggestion-item" data-idx="${i}">
+      <span class="suggestion-icon">💭</span><span class="suggestion-text"></span>
+    </div>`
+  ).join('');
+  // Set text safely via textContent (not innerHTML)
+  box.querySelectorAll('.suggestion-item').forEach((el, i) => {
+    el.querySelector('.suggestion-text').textContent = items[i];
+    el._suggestionText = items[i];
+  });
+  box.style.display = 'block';
+}
+
+function hideSuggestions() {
+  document.getElementById('suggestions-box').style.display = 'none';
+}
+
+function applySuggestion(text) {
+  document.getElementById('questionInput').value = text;
+  hideSuggestions();
+  document.getElementById('questionInput').focus();
+}
+
+document.addEventListener('click', e => {
+  const item = e.target.closest('.suggestion-item');
+  if (item && item._suggestionText) { applySuggestion(item._suggestionText); return; }
+  if (!e.target.closest('.input-wrap')) hideSuggestions();
+});
+
+// ── API Tester ────────────────────────────────────────────────────────────────
+async function runTest() {
+  const url     = document.getElementById('testUrl').value.trim();
+  const method  = document.getElementById('testMethod').value;
+  const hRaw    = document.getElementById('testHeaders').value.trim();
+  const body    = document.getElementById('testBody').value.trim();
+  const result  = document.getElementById('testResult');
+  const btn     = document.getElementById('testBtn');
+  if (!url) { showToast('❗ URL daalo'); return; }
+  let headers = {};
+  if (hRaw) { try { headers=JSON.parse(hRaw); } catch { showToast('❗ Headers valid JSON mein daalo'); return; } }
+  btn.innerHTML = '<span class="spinner"></span> Running...';
+  btn.disabled  = true;
+  result.style.display = 'block';
+  result.textContent   = 'Sending request...';
+  try {
+    const res  = await fetch(`${API}/test`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ url, method, headers, body:body||null })
+    });
+    const data = await res.json();
+    const color = data.success ? '#4ecca3' : '#ff5f57';
+    result.innerHTML = `<span style="color:${color};font-weight:bold">${data.success?'✅':'❌'} ${data.status_code}</span>  <span style="color:var(--muted)">${data.response_time_ms}ms</span>\n\n${JSON.stringify(data.body, null, 2)}`;
+  } catch (e) {
+    result.textContent = '❌ Error: ' + e.message;
+  }
+  btn.innerHTML = '▶ &nbsp;Run Request';
+  btn.disabled  = false;
+}
+
+// ── PDF Export ────────────────────────────────────────────────────────────────
+async function exportPDF() {
+  const apiName = document.getElementById('apiSelect').value;
+  if (!apiName) { showToast('❗ Pehle API select karo'); return; }
+  if (!chatMessages.length) { showToast('❗ Chat mein kuch messages nahi hain'); return; }
+  showToast('⏳ PDF ban raha hai...');
+  try {
+    const res = await fetch(`${API}/export-pdf`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ api_name:apiName, messages:chatMessages })
+    });
+    if (!res.ok) { const e=await res.json(); showToast('❌ '+e.detail); return; }
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = res.headers.get('Content-Disposition')?.match(/filename="?([^"]+)"?/)?.[1] || 'chat.pdf';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('📕 PDF download ho raha hai!');
+  } catch (e) { showToast('❌ '+e.message); }
+}
+
+// ── Export MD / TXT ───────────────────────────────────────────────────────────
+function exportChat(fmt) {
+  if (!chatMessages.length) { showToast('❗ No chat to export'); return; }
+  let out = `# API Docs QnA Agent — Chat Export\nDate: ${new Date().toLocaleString()}\n\n---\n\n`;
+  chatMessages.forEach(m => {
+    out += m.role==='user' ? `## 👤 You\n${m.content}\n\n` : `## ⚡ Assistant\n${m.content}\n\n---\n\n`;
+  });
+  const blob = new Blob([out], { type: fmt==='md' ? 'text/markdown' : 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `chat-export-${Date.now()}.${fmt}`;
+  a.click();
+}
+
+function clearChat() {
+  if (!confirm('Clear entire chat?')) return;
+  document.getElementById('messages').innerHTML =
+    `<div class="empty-state" id="emptyState"><div class="icon">⚡</div><p><strong>Upload API docs</strong> on the left, select the API, then start asking questions!</p></div>`;
+  chatMessages = []; conversationHistory = [];
+}
+
+// ── History ───────────────────────────────────────────────────────────────────
+function saveHistory(q) {
+  let h = JSON.parse(localStorage.getItem('qna_history')||'[]');
+  h = [q, ...h.filter(x=>x!==q)].slice(0,30);
+  localStorage.setItem('qna_history', JSON.stringify(h));
+}
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  const h    = JSON.parse(localStorage.getItem('qna_history')||'[]');
+  list.innerHTML = h.length
+    ? h.map((q,i)=>`<div class="history-item" data-hidx="${i}">🕐 <span></span></div>`).join('')
+    : '<p class="history-empty">No history yet</p>';
+  if (h.length) {
+    list.querySelectorAll('.history-item').forEach((el,i) => {
+      el.querySelector('span').textContent = h[i];
+      el._histText = h[i];
+      el.addEventListener('click', () => useHistory(el._histText));
+    });
+  }
+}
+function useHistory(q) {
+  document.getElementById('questionInput').value = q;
+  switchTab('upload'); document.getElementById('questionInput').focus();
+}
+function clearHistory() { localStorage.removeItem('qna_history'); renderHistory(); }
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function showTyping(show) { document.getElementById('typingIndicator').classList.toggle('show', show); }
+function scrollBottom()   { const m=document.getElementById('messages'); m.scrollTop=m.scrollHeight; }
+function nowStr()         { return new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+
+function setSendLoading(loading) {
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = loading;
+  btn.innerHTML = loading
+    ? '<span class="spinner"></span>'
+    : '<svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z" fill="white"/></svg>';
+}
+
+function showStatus(el, type, msg) {
+  el.className = `status-bar ${type}`; el.textContent = msg; el.style.display = 'block';
+  if (type!=='loading') setTimeout(()=>el.style.display='none', 4000);
+}
+
+function showToast(msg, ms=3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.style.opacity='0', ms);
+}
+
+function useChip(text) {
+  const api = document.getElementById('apiSelect').value;
+  if (!api) { showToast('❗ Pehle APIs tab se ek API select karo'); switchTab('apis'); return; }
+  document.getElementById('questionInput').value = text;
+  sendQuestion();
+}
+
+// ── SDK & README Generator ───────────────────────────────────────────────
+let lastGenContent = '';
+
+async function generateSDK() {
+  const api = document.getElementById('genApiSelect').value || document.getElementById('apiSelect').value;
+  const lang = document.getElementById('genLanguage').value;
+  const status = document.getElementById('genStatus');
+  const resultBox = document.getElementById('genResultBox');
+  const btn = document.getElementById('genSdkBtn');
+  const dlGroup = document.getElementById('genDownloadGroup');
+
+  if (!api) return showStatus(status, 'error', 'Please select an API first');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating SDK...';
+  showStatus(status, 'loading', `Generating ${lang.toUpperCase()} SDK with AI...`);
+  resultBox.style.display = 'none';
+  dlGroup.style.display = 'none';
+
+  try {
+    const res = await fetch(`${API}/generate-sdk`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ api_name: api, language: lang })
+    });
+    const data = await res.json();
+    if (res.ok && data.code) {
+      lastGenContent = data.code;
+      showStatus(status, 'success', `✓ ${lang.toUpperCase()} SDK generated!`);
+      resultBox.style.display = 'block';
+      resultBox.textContent = data.code;
+      dlGroup.style.display = 'flex';
+      document.getElementById('genDownloadBtn').onclick = () => downloadSDK(api, lang, data.code);
+    } else {
+      showStatus(status, 'error', data.detail || 'Failed to generate SDK');
+    }
+  } catch (err) {
+    showStatus(status, 'error', 'Network error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '⚡ &nbsp;Generate SDK';
+  }
+}
+
+async function generateReadme() {
+  const api = document.getElementById('genApiSelect').value || document.getElementById('apiSelect').value;
+  const status = document.getElementById('genStatus');
+  const resultBox = document.getElementById('genResultBox');
+  const btn = document.getElementById('genReadmeBtn');
+  const dlGroup = document.getElementById('genDownloadGroup');
+
+  if (!api) return showStatus(status, 'error', 'Please select an API first');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating README...';
+  showStatus(status, 'loading', 'Generating README with AI...');
+  resultBox.style.display = 'none';
+  dlGroup.style.display = 'none';
+
+  try {
+    const res = await fetch(`${API}/generate-readme`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ api_name: api })
+    });
+    const data = await res.json();
+    if (res.ok && data.readme) {
+      lastGenContent = data.readme;
+      showStatus(status, 'success', '✓ README generated!');
+      resultBox.style.display = 'block';
+      resultBox.textContent = data.readme;
+      dlGroup.style.display = 'flex';
+      document.getElementById('genDownloadBtn').onclick = () => downloadReadme(api, data.readme);
+    } else {
+      showStatus(status, 'error', data.detail || 'Failed to generate README');
+    }
+  } catch (err) {
+    showStatus(status, 'error', 'Network error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '📝 &nbsp;Generate README';
+  }
+}
+
+async function downloadSDK(api, lang, code) {
+  try {
+    const res = await fetch(`${API}/download-sdk`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ api_name: api, language: lang, code: code })
+    });
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = res.headers.get('Content-Disposition')?.match(/filename="?([^"]+)"?/)?.[1] || `${api}_sdk.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('💾 SDK download started!');
+  } catch (e) {
+    showToast('❌ ' + e.message);
+  }
+}
+
+async function downloadReadme(api, readme) {
+  try {
+    const res = await fetch(`${API}/download-readme`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ api_name: api, readme: readme })
+    });
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = res.headers.get('Content-Disposition')?.match(/filename="?([^"]+)"?/)?.[1] || `${api}_README.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('💾 README download started!');
+  } catch (e) {
+    showToast('❌ ' + e.message);
+  }
+}
+
+function copyGenResult() {
+  if (!lastGenContent) return;
+  navigator.clipboard.writeText(lastGenContent).then(() => {
+    showToast('✓ Copied to clipboard!');
+  });
+}
+
+loadApis();
+</script>
+</body>
+</html>
